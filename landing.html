@@ -100,7 +100,7 @@
     }
 
     .btn:hover {
-      background-color: #3182ce;
+      background-color: #2682d8;
     }
 
     /* Sections */
@@ -157,10 +157,12 @@
 
     <!-- Hero Section -->
     <section class="hero">
-      <h2>Teach. Learn. Earn. Grow. Thrive with TutorConnect!</h2>
+      <h2>Teach. Learn. Earn. Grow!</h2>
       <p>Join our community of passionate educators and eager learners.</p>
       <div id="login-options">
+        
         <button class="btn" onclick="showLoginOptions()">Get Started</button>
+       
       </div>
     </section>
 
@@ -220,13 +222,16 @@
     }
 
     function showLoginOptions() {
-      document.getElementById('login-options').innerHTML = `
-        <div>
-          <button class="btn" style="background-color: #6b46c1;">Login as Student</button>
-          <button class="btn">Login as Teacher</button>
-        </div>
-      `;
-    }
+  document.getElementById('login-options').innerHTML = `
+    <div>
+      <a href="student_login.html" class="btn btn-student" style="background-color: ##4299e1;">Login as Student</a>
+      <a href="teacher-login.html" class="btn btn-teacher" style="background-color: #6b46c1;">Login as Teacher</a>
+    </div>
+  `;
+}
+
+
   </script>
+  <script type="module" src="firebase-config.js"></script>
 </body>
 </html>
