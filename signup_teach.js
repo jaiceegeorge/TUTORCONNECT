@@ -51,7 +51,8 @@ signUpForm.addEventListener('submit', async (e) => {
         await setDoc(doc(db, "users", user.uid), {
             username: username,
             email: email,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            role: "teacher"
         });
         
         alert('Account created successfully!');

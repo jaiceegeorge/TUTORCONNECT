@@ -29,15 +29,15 @@ async function getEmailByUsername(username) {
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("username", "==", username));
     const querySnapshot = await getDocs(q);
-    
+
     if (querySnapshot.empty) {
         throw new Error("Username not found");
     }
-    
+
     return querySnapshot.docs[0].data().email;
 }
 
-// Get sign in form element
+// Get sign-in form element
 const signInForm = document.querySelector('.sign-in form');
 const loginInput = signInForm.querySelector('input[type="text"]');
 
@@ -51,17 +51,17 @@ loginInput.addEventListener('input', (e) => {
     }
 });
 
-// Sign In form submission
+// Sign-In form submission
 signInForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     // Get form values
     const loginValue = signInForm.querySelector('input[type="text"]').value;
     const password = signInForm.querySelector('input[type="password"]').value;
-    
+
     try {
         let email;
-        
+
         // Check if input is email or username
         if (isEmail(loginValue)) {
             email = loginValue;
@@ -69,38 +69,56 @@ signInForm.addEventListener('submit', async (e) => {
             // If username, get corresponding email
             email = await getEmailByUsername(loginValue);
         }
-        
+
         // Sign in with email and password
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        alert('Logged in successfully!');
-        
-        // Redirect to home page or dashboard
-        window.location.href = 'home.html';
-        
+        const userId = userCredential.user.uid;
+
+        // Fetch user data from Firestore
+        const userRef = collection(db, "users");
+        const q = query(userRef, where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            const userData = querySnapshot.docs[0].data();
+            const role = userData.role; // Fetch the user's role
+
+            // Allow only students to log in
+            if (role === "student") {
+                alert("Welcome, Student!");
+                window.location.href = "home.html"; // Redirect to Student Dashboard
+            } else {
+                alert("Access Denied: Only students are allowed to log in.");
+                return;
+            }
+        } else {
+            throw new Error("User data not found in Firestore.");
+        }
+
     } catch (error) {
-        console.error('Error:', error);
+        console.error("Error:", error);
         let errorMessage = "An error occurred during login.";
-        
+
         if (error.message === "Username not found") {
             errorMessage = "Invalid username or password.";
         } else {
             switch (error.code) {
-                case 'auth/user-not-found':
-                case 'auth/wrong-password':
+                case "auth/user-not-found":
+                case "auth/wrong-password":
                     errorMessage = "Invalid login credentials.";
                     break;
-                case 'auth/invalid-email':
+                case "auth/invalid-email":
                     errorMessage = "Invalid email format.";
                     break;
-                case 'auth/user-disabled':
+                case "auth/user-disabled":
                     errorMessage = "This account has been disabled.";
                     break;
-                case 'auth/too-many-requests':
+                case "auth/too-many-requests":
                     errorMessage = "Too many failed login attempts. Please try again later.";
                     break;
             }
         }
-        
+
         alert(errorMessage);
     }
 });
@@ -109,20 +127,20 @@ signInForm.addEventListener('submit', async (e) => {
 const forgotPassLink = document.querySelector('.forgot-pass a');
 forgotPassLink.addEventListener('click', async (e) => {
     e.preventDefault();
-    
+
     const loginValue = prompt("Enter your email or username for password reset:");
-    
+
     if (loginValue) {
         try {
             let email;
-            
+
             // Check if input is email or username
             if (isEmail(loginValue)) {
                 email = loginValue;
             } else {
                 email = await getEmailByUsername(loginValue);
             }
-            
+
             await sendPasswordResetEmail(auth, email);
             alert('Password reset email sent! Check your inbox.');
         } catch (error) {
