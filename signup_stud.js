@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -24,13 +24,13 @@ const signUpForm = document.querySelector('.sign-up form');
 // Sign Up form submission
 signUpForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     // Get form values
     const username = signUpForm.querySelector('input[type="text"]').value;
     const email = signUpForm.querySelector('input[type="email"]').value;
     const password = signUpForm.querySelectorAll('input[type="password"]')[0].value;
     const confirmPassword = signUpForm.querySelectorAll('input[type="password"]')[1].value;
-    
+
     // Basic validation
     if (password !== confirmPassword) {
         alert("Passwords don't match!");
@@ -41,12 +41,23 @@ signUpForm.addEventListener('submit', async (e) => {
         alert("Password should be at least 6 characters long!");
         return;
     }
-    
+
     try {
+        // Check if username already exists
+        const usersRef = collection(db, "users");
+        const usernameQuery = query(usersRef, where("username", "==", username));
+        const usernameSnapshot = await getDocs(usernameQuery);
+
+        if (!usernameSnapshot.empty) {
+            alert("Username already taken. Please choose another.");
+            return;
+        }
+
+
         // Create user with email and password
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        
+
         // Store additional user data in Firestore
         await setDoc(doc(db, "users", user.uid), {
             username: username,
@@ -54,15 +65,15 @@ signUpForm.addEventListener('submit', async (e) => {
             createdAt: new Date().toISOString(),
             role: "student"
         });
-        
+
         alert('Account created successfully!');
         // Redirect to home page or dashboard
-        window.location.href = 'home.html';
-        
+        window.location.href = 'home_std.html';
+
     } catch (error) {
         console.error('Error:', error);
         let errorMessage = "An error occurred during signup.";
-        
+
         switch (error.code) {
             case 'auth/email-already-in-use':
                 errorMessage = "This email is already registered.";
@@ -77,7 +88,7 @@ signUpForm.addEventListener('submit', async (e) => {
                 errorMessage = "Password is too weak.";
                 break;
         }
-        
+
         alert(errorMessage);
     }
 });

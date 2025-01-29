@@ -86,7 +86,7 @@ signInForm.addEventListener('submit', async (e) => {
             // Allow only teachers to log in
             if (role === "teacher") {
                 alert("Welcome, Teacher!");
-                window.location.href = "home.html"; // Redirect to Teacher Dashboard
+                window.location.href = "home_teach.html"; // Redirect to Teacher Dashboard
             } else {
                 alert("Access Denied: Only teachers are allowed to log in.");
                 return;
